@@ -1,36 +1,48 @@
 #!/usr/bin/python3
-"""
-module for log parsing
-"""
+"""Log parsing"""
+import signal
+import sys
 
-from sys import stdin
 
-if __name__ == "__main__":
-    total = 0
-    codes = {"200": 0, "301": 0, "400": 0,
-             "401": 0, "403": 0, "404": 0, "405": 0, "500": 0}
+def print_stats(sum, status):
+    """
+    Function that print stats
+    """
+
+    print('File size: {}'.format(sum))
+    for key, value in sorted(status.items()):
+        if value != 0:
+            print('{}: {}'.format(key, value))
+
+if __name__ == '__main__':
+    sum_size = 0
+    status_code = {
+        '200': 0,
+        '301': 0,
+        '400': 0,
+        '401': 0,
+        '403': 0,
+        '404': 0,
+        '405': 0,
+        '500': 0
+    }
+
     try:
-        for count, line in enumerate(stdin):
-            args = line.split(" ")
-            if len(args) < 2:
-                continue
-            if args[-2] in codes:
-                codes[args[-2]] += 1
-            try:
-                total += int(args[-1])
-            except:
-                pass
-            if (count + 1) % 10 == 0:
-                print("File size: {}".format(total))
-                for status in sorted(codes.keys()):
-                    if codes[status] != 0:
-                        print("{}: {}".format(status, codes[status]))
-        print("File size: {}".format(total))
-        for status in sorted(codes.keys()):
-            if codes[status] != 0:
-                print("{}: {}".format(status, codes[status]))
+        i = 0
+        for line in sys.stdin:
+            args = line.split()
+            if len(args) > 6:
+                status = args[-2]
+                file_size = args[-1]
+                sum_size += int(file_size)
+                if status in status_code:
+                    i += 1
+                    status_code[status] += 1
+                    if i % 10 == 0:
+                        print_stats(sum_size, status_code)
+
     except KeyboardInterrupt:
-        print("File size: {}".format(total))
-        for status in sorted(codes.keys()):
-            if codes[status] != 0:
-                print("{}: {}".format(status, codes[status]))
+        print_stats(sum_size, status_code)
+        raise
+    else:
+        print_stats(sum_size, status_code)
