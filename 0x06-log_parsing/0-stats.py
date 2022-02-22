@@ -1,52 +1,54 @@
 #!/usr/bin/python3
-""" Python script that reads stdin line by line and computes metrics
+""" A program to ingest and track logs, periodically printing stats.
 """
 
 
 from sys import stdin, exit
 
 
-def printCodeTracking(T_File_Size, Tracker):
+def printCodeTracking(totalFileSize, codeTracker):
     """ Print formatted log stats.
     """
     # Print total size of data passed to date
-    print('File size: ' + str(T_File_Size))
+    print('File size: ' + str(totalFileSize))
 
-    codeList = sorted(Tracker.keys())
+    codeList = sorted(codeTracker.keys())
 
     # Print formatted count of requests by status code
     for code in codeList:
-        if Tracker[code] != 0:
-            print(code + ': ' + str(Tracker[code]))
+        if codeTracker[code] != 0:
+            print(code + ': ' + str(codeTracker[code]))
 
 
-Tracker = {
+codeTracker = {
     '200': 0, '301': 0, '400': 0, '401': 0,
     '403': 0, '404': 0, '405': 0, '500': 0
 }
-T_File_Size = 0
-Counter = 0
+totalFileSize = 0
+loopCounter = 0
 
 try:
     for line in stdin:
-        lineSplit = line.split()
         # Pull necessary fields from log line
+        lineSplit = line.split()
+
         if len(lineSplit) >= 2:
             statusCode, fileSize = [part for part in lineSplit[-2:]]
 
             # Update persistent size and status counters
-            T_File_Size += int(fileSize)
-            if statusCode in Tracker:
-                Tracker[statusCode] += 1
+            totalFileSize += int(fileSize)
+            if statusCode in codeTracker:
+                codeTracker[statusCode] += 1
 
                 # Keep track of how many logs have been read in print loop
-                if Counter == 9:
-                    printCodeTracking(T_File_Size, Tracker)
-                    Counter = 0
+                if loopCounter == 9:
+                    printCodeTracking(totalFileSize, codeTracker)
+                    loopCounter = 0
                 else:
-                    Counter += 1
+                    loopCounter += 1
+
     # Print stats at end of input stream
-    printCodeTracking(T_File_Size, Tracker)
+    printCodeTracking(totalFileSize, codeTracker)
 
 except KeyboardInterrupt:
-    printCodeTracking(T_File_Size, Tracker)
+    printCodeTracking(totalFileSize, codeTracker)
