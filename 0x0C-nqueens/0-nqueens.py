@@ -7,60 +7,69 @@ Module to solve the N Queens Problem
 import sys
 
 
-def queens(n):
-    """program that solves the N queens problem"""
-    trail = []
-    sets = set()
-    for column in range(n):
-        trail.append([0, column])
-        sets.add(column)
-
-    road = []
-    while trail:
-        [row, column] = trail.pop(0)
-        while road and (row < road[0][0]):
-            road.pop(0)
-        if road and (row == road[0][0]):
-            road[0] = [row, column]
-        else:
-            road.insert(0, [row, column])
-
-        nextsrows = row + 1
-        death = set()
-        for (i, j) in road:
-            death.add(j)
-            distance = nextsrows - i
-            if j - distance >= 0:
-                death.add(j - distance)
-            if j + distance < n:
-                death.add(j + distance)
-
-        safe = sets.difference(death)
-        if not safe:
-            if nextsrows == n:
-                temp = road.copy()
-                temp.reverse()
-                print(temp, flush=True)
-            road.pop(0)
-        else:
-            safe = list(safe)
-            safe.reverse()
-            for position in safe:
-                trail.insert(0, [nextsrows, position])
+if len(sys.argv) != 2:
+    print("Usage: nqueens N")
+    exit(1)
+if not sys.argv[1].isdigit():
+    print("N must be a number")
+    exit(1)
+if int(sys.argv[1]) < 4:
+    print("N must be at least 4")
+    exit(1)
+N = int(sys.argv[1])
+board = [[0 for i in range(N)]for j in range(N)]
+k = 1
 
 
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: nqueens N")
-        exit(1)
+def print_sol(board):
+    global k
+    k = k + 1
+    S = []
+    for i in range(N):
+        for j in range(N):
+            if board[i][j] == 1:
+                S.append([i, j])
+    print(S)
 
-    if int(sys.argv[1]) < 4:
-        print("N must be at least 4")
-        exit(1)
 
-    try:
-        n = int(sys.argv[1])
-    except:
-        print("N must be a number")
-        exit(1)
-    queens(n)
+def isSafe(board, row, col):
+    for i in range(col):
+        if (board[row][i]):
+            return False
+    i = row
+    j = col
+    while i >= 0 and j >= 0:
+        if(board[i][j]):
+            return False
+        i -= 1
+        j -= 1
+    i = row
+    j = col
+    while j >= 0 and i < N:
+        if(board[i][j]):
+            return False
+        i = i + 1
+        j = j - 1
+    return True
+
+
+def solving(board, col):
+    if (col == N):
+        print_sol(board)
+        return True
+    res = False
+    for i in range(N):
+        if (isSafe(board, i, col)):
+            board[i][col] = 1
+            res = solving(board, col + 1) or res
+            board[i][col] = 0
+    return res
+
+def solve():
+    board = [[0 for j in range(N)]for i in range(N)]
+    if (solving(board, 0) is False):
+        print("Solution does not exist")
+        return
+    return
+
+solve()
