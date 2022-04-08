@@ -1,30 +1,22 @@
 #!/usr/bin/node
 const request = require('request');
-
-function doRequest (url) {
-  return new Promise(function (resolve, reject) {
-    request(url, function (error, res, body) {
-      if (!error && res.statusCode === 200) {
-        console.log(JSON.parse(body).name);
-        resolve(body);
-      } else {
-        reject(error);
-      }
+const process = require('process');
+const id = process.argv[2];
+const url = 'https://swapi-api.hbtn.io/api/films/' + id;
+request({ url: url }, (err1, res, body) => {
+  const nid = [];
+  const bjs = JSON.parse(body);
+  bjs.characters.forEach(urls => {
+    const id = urls.split('/')[5];
+    request({ url: urls }, (err2, res, body) => {
+      const bjs1 = JSON.parse(body);
+      nid[id] = bjs1.name;
     });
   });
-}
-// hi
-let chars;
-request(`https://swapi-api.hbtn.io/api/films/${process.argv[2]}`, async function (error, response, body) {
-  if (error) {
-    console.error('error:', error);
-  }
-  chars = JSON.parse(body).characters;
-  let x;
-  if (chars) {
-    for (x of chars) {
-      await doRequest(x);
-      // console.log(JSON.parse(res.body).name);
-    }
-  }
+  setTimeout(function () {
+    bjs.characters.forEach(element => {
+      const id = element.split('/')[5];
+      console.log(nid[id]);
+    });
+  }, 1000);
 });
