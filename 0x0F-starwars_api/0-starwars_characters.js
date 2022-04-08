@@ -1,22 +1,24 @@
 #!/usr/bin/node
+/* using API to print the title film  */
 const request = require('request');
-const process = require('process');
 const id = process.argv[2];
-const url = 'https://swapi-api.hbtn.io/api/films/' + id;
-request({ url: url }, (err1, res, body) => {
-  const nid = [];
-  const bjs = JSON.parse(body);
-  bjs.characters.forEach(urls => {
-    const id = urls.split('/')[5];
-    request({ url: urls }, (err2, res, body) => {
-      const bjs1 = JSON.parse(body);
-      nid[id] = bjs1.name;
-    });
-  });
-  setTimeout(function () {
-    bjs.characters.forEach(element => {
-      const id = element.split('/')[5];
-      console.log(nid[id]);
-    });
-  }, 1000);
+const url = `https://swapi-api.hbtn.io/api/films/${id}`;
+/* create a mapped dict for completed tasks */
+request.get(url, async (error, res) => {
+  if (error) console.log(error);
+  else {
+    const mainErray = JSON.parse(res.body);
+    tryExecuteNext(mainErray.characters, 0);
+  }
 });
+
+const tryExecuteNext = (mainErray, index) => {
+  request.get(mainErray[index], (error, res, body) => {
+    if (error) throw error;
+    const result = JSON.parse(body);
+    console.log(result.name);
+    if (index < mainErray.length - 1) {
+      tryExecuteNext(mainErray, index + 1);
+    }
+  });
+};
